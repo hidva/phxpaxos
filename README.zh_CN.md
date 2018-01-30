@@ -4,7 +4,7 @@
 使得一些单机状态服务可以扩展到多机器，从而获得强一致性的多副本以及自动容灾的特性。**
 **这个类库在微信服务里面经过一系列的工程验证，并且我们对它进行过大量的恶劣环境下的测试，使其在一致性的保证上更为健壮。**
 
-作者：Haochuan Cui, Ming Chen, Junchao Chen 和 Duokai Huang 
+作者：Haochuan Cui, Ming Chen, Junchao Chen 和 Duokai Huang
 
 联系我们：phxteam@tencent.com
 
@@ -28,12 +28,12 @@
   * 基于Paxos算法的安全的成员变更。
   * 基于Paxos算法的集群签名保护，隔离非法签名的错误机器。
   * 自适应的过载保护。
-  
+
 # 局限
   * 一个PhxPaxos实例任一时刻只允许运行在单一进程（容许多线程）。
   * 这个类库没有内建对client-server的支持，开发者必须将类库的代码嵌入到自己的服务器代码里面，以实现这个功能。
   * PhxPaxos只容许运行在64位的Linux平台。
-  
+
 # 性能
 ### 运行环境
 
@@ -44,7 +44,7 @@
     集群机器个数： 3个
     集群间机器PING值： 0.05ms
     请求写入并发：100个线程
-    
+
 ### 性能测试结果(qps)
 > 请求延时小于10ms.
 ###### 写入小数据(100B)
@@ -66,7 +66,7 @@
 这些API我们有可能会随时的进行调整而不进行兼容。
 
 **src**目录是PhxPaxos的源代码目录，如想深入研究PhxPaxos的工作原理，可详细阅读此目录的代码。
-如果你只是想使用PhxPaxos，则暂时不需要理解此目录代码。 
+如果你只是想使用PhxPaxos，则暂时不需要理解此目录代码。
 
 **third_party**目录用于放置PhxPaxos所需要用到的一些第三方库；一般刚获得PhxPaxos源代码的时候，这是一个空目录。
 如何放置第三方库在后面编译方面的章节会详细介绍。使用PhxPaxos需要依赖到两个第三方库，分别是protobuf和leveldb。
@@ -79,7 +79,7 @@
  * PhxEcho展示了如何编写一个状态机，并和Phxpaxos结合。
  * PhxKV则是一个更为完整的系统，他实现了一个KV的状态机，搭配PhxPaxos实现了分布式KV存储，并展示了如何实现Checkpoint来删除paxos log；
  另外它同时展示了怎么将这些代码整合到一个RPC框架（我们使用了grpc作为演示），最终实现一个完整的分布式后台存储系统。
- 
+
 # 公共头文件介绍
  * **include/node.h** PhxPaxos的主要API在这里，建议开发者从这里开始。
  * **include/options.h** 运行PhxPaxos所需的一些配置以及可定制的选项。
@@ -89,7 +89,7 @@
  * **include/storage.h** 存储模块的抽象函数。
  * **include/log.h** 日志模块的抽象函数。
  * **include/breakpoint.h** 断点抽象函数，一般可用于实现自己的监控。
- 
+
 # 如何编译
 ### 编译前的第三方库准备
 首先我们看一下各目录的依赖关系。如下：
@@ -109,10 +109,10 @@
 ### 编译环境
  * Linux。
  * GCC-4.8及以上版本。
- 
+
 ### 编译安装方法
 ###### 编译libphxpaxos.a
- 
+
 在PhxPaxos根目录下
 ```Bash
 ./autoinstall.sh
@@ -121,7 +121,7 @@ make install
 ```
 
 ###### 编译libphxpaxos_plugin.a
- 
+
 在plugin目录下
 ```Bash
 make
@@ -154,7 +154,7 @@ class PhxEchoSM : public phxpaxos::StateMachine
 public:
     PhxEchoSM();
 
-    bool Execute(const int iGroupIdx, const uint64_t llInstanceID, 
+    bool Execute(const int iGroupIdx, const uint64_t llInstanceID,
             const std::string & sPaxosValue, phxpaxos::SMCtx * poSMCtx);
 
     const int SMID() const { return 1; }
@@ -165,19 +165,19 @@ public:
 其中Execute为状态机状态转移函数，输入为sPaxosValue， PhxPaxos保证多台机器都会执行相同系列的Execute(sPaxosValue)，
 从而获得强一致性。函数的实现如下：
 ```c++
-bool PhxEchoSM :: Execute(const int iGroupIdx, const uint64_t llInstanceID, 
+bool PhxEchoSM :: Execute(const int iGroupIdx, const uint64_t llInstanceID,
         const std::string & sPaxosValue, SMCtx * poSMCtx)
 {
-    printf("[SM Execute] ok, smid %d instanceid %lu value %s\n", 
+    printf("[SM Execute] ok, smid %d instanceid %lu value %s\n",
             SMID(), llInstanceID, sPaxosValue.c_str());
 
     //only commiter node have SMCtx.
     if (poSMCtx != nullptr && poSMCtx->m_pCtx != nullptr)
-    {   
+    {
         PhxEchoSMCtx * poPhxEchoSMCtx = (PhxEchoSMCtx *)poSMCtx->m_pCtx;
         poPhxEchoSMCtx->iExecuteRet = 0;
         poPhxEchoSMCtx->sEchoRespValue = sPaxosValue;
-    }   
+    }
 
     return true;
 }
@@ -213,9 +213,9 @@ public:
     std::string sEchoRespValue;
 
     PhxEchoSMCtx()
-    {   
-        iExecuteRet = -1; 
-    }   
+    {
+        iExecuteRet = -1;
+    }
 };
 ```
 通过iExecuteRet可以获得Execute的执行情况，通过sEchoRespValue可以获得Execute带入的sEchoReqValue。
@@ -260,9 +260,9 @@ int PhxEchoServer :: RunPaxos()
 
     int ret = MakeLogStoragePath(oOptions.sLogStoragePath);
     if (ret != 0)
-    {   
+    {
         return ret;
-    }   
+    }
 
     //this groupcount means run paxos group count.
     //every paxos group is independent, there are no any communicate between any 2 paxos group.
@@ -281,20 +281,20 @@ int PhxEchoServer :: RunPaxos()
     LogFunc pLogFunc;
     ret = LoggerGoogle :: GetLogger("phxecho", "./log", 3, pLogFunc);
     if (ret != 0)
-    {   
+    {
         printf("get logger_google fail, ret %d\n", ret);
         return ret;
-    }   
+    }
 
     //set logger
     oOptions.pLogFunc = pLogFunc;
 
     ret = Node::RunNode(oOptions, m_poPaxosNode);
     if (ret != 0)
-    {   
+    {
         printf("run paxos fail, ret %d\n", ret);
         return ret;
-    }   
+    }
 
     printf("run paxos ok\n");
     return 0;
@@ -335,16 +335,16 @@ int PhxEchoServer :: Echo(const std::string & sEchoReqValue, std::string & sEcho
     uint64_t llInstanceID = 0;
     int ret = m_poPaxosNode->Propose(0, sEchoReqValue, llInstanceID, &oCtx);
     if (ret != 0)
-    {   
+    {
         printf("paxos propose fail, ret %d\n", ret);
         return ret;
-    }   
+    }
 
     if (oEchoSMCtx.iExecuteRet != 0)
-    {   
+    {
         printf("echo sm excute fail, excuteret %d\n", oEchoSMCtx.iExecuteRet);
         return oEchoSMCtx.iExecuteRet;
-    }   
+    }
 
     sEchoRespValue = oEchoSMCtx.sEchoRespValue.c_str();
 
@@ -425,9 +425,9 @@ int PhxElection :: RunPaxos()
 
     int ret = MakeLogStoragePath(oOptions.sLogStoragePath);
     if (ret != 0)
-    {   
+    {
         return ret;
-    }   
+    }
 
     oOptions.iGroupCount = 1;
 
@@ -443,10 +443,10 @@ int PhxElection :: RunPaxos()
 
     ret = Node::RunNode(oOptions, m_poPaxosNode);
     if (ret != 0)
-    {   
+    {
         printf("run paxos fail, ret %d\n", ret);
         return ret;
-    }   
+    }
 
     //you can change master lease in real-time.
     m_poPaxosNode->SetMasterLease(0, 3000);
