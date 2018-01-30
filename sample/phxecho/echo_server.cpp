@@ -112,14 +112,11 @@ int PhxEchoServer :: RunPaxos()
 
 int PhxEchoServer :: Echo(const std::string & sEchoReqValue, std::string & sEchoRespValue)
 {
-    SMCtx oCtx;
     PhxEchoSMCtx oEchoSMCtx;
-    //smid must same to PhxEchoSM.SMID().
-    oCtx.m_iSMID = 1;
+    SMCtx oCtx;
     oCtx.m_pCtx = (void *)&oEchoSMCtx;
-
     uint64_t llInstanceID = 0;
-    if (sEchoReqValue.find("NOSMCTX") != std::string::npos) {
+    if (sEchoReqValue.find("SMCTXNO") != std::string::npos) {
         int ret = m_poPaxosNode->Propose(0, sEchoReqValue, llInstanceID);
         if (ret != 0)
         {
@@ -127,8 +124,15 @@ int PhxEchoServer :: Echo(const std::string & sEchoReqValue, std::string & sEcho
             return ret;
         }
 
-        sEchoRespValue = "[NOSMCTX]" + sEchoReqValue;
+        oEchoSMCtx.iExecuteRet = 0;
+        oEchoSMCtx.sEchoRespValue = sEchoReqValue;
     } else {
+        if (sEchoReqValue.find("SMCTX1") != std::string::npos) {
+            oCtx.m_iSMID = 1;
+        } else {
+            oCtx.m_iSMID = 2;
+        }
+
         int ret = m_poPaxosNode->Propose(0, sEchoReqValue, llInstanceID, &oCtx);
         if (ret != 0)
         {
@@ -141,9 +145,9 @@ int PhxEchoServer :: Echo(const std::string & sEchoReqValue, std::string & sEcho
             printf("echo sm excute fail, excuteret %d\n", oEchoSMCtx.iExecuteRet);
             return oEchoSMCtx.iExecuteRet;
         }
-
-        sEchoRespValue = oEchoSMCtx.sEchoRespValue.c_str();
     }
+
+    sEchoRespValue = oEchoSMCtx.sEchoRespValue;
     return 0;
 }
 
