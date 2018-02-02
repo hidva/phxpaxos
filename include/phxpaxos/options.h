@@ -168,6 +168,8 @@ public:
     //optional
     //User-specified paxoslog storage.
     //Default is nullptr.
+    //
+    // 注意，poLogStorage必须在PhxPaxos的Node实例之后进行析构。
     LogStorage * poLogStorage;
 
     //optional
@@ -195,6 +197,8 @@ public:
 
     //optional
     //User-specified network.
+    //
+    // 注意，poNetWork必须在PhxPaxos的Node实例之后进行析构。
     NetWork * poNetWork;
 
     //optional
