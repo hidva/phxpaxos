@@ -98,6 +98,15 @@ public:
     //for this case, you must return false to retry this execute to avoid this system failure.
     //
     // Q: 如果因为磁盘满等一下原因返回了 false, 这时重试有用吗?
+    /* 在 multi paxos 确定了命令序列之后, StateMachine execute 将只能单线程执行这个命令序列. 理论上也不支持多线
+     * 程执行, 比如多线程执行的话无法确保在所有机器上实际执行的命令序列相同. 那么这个是不是一个瓶颈呢? 按我理解应该不
+     * 是因为 multi paxos 一般用来同步分布式存储系统某个数据分区, 比如一个分布式 kv 系统将 [key0, key1] 划分为一
+     * 个数据分区, 采用三副本, 那么 multipaxos 将在这三副本之间同步 [key0, key1] 的改动, 也就是仅把对 [key0,
+     * key1] 的处理会被串行化. 所以存储系统的并发处理能力可以通过更细的划分数据分区.
+     *
+     * 那么存储系统能不能像 cpucache 一样提供对同一个 key 的并行处理并且加上少许的读写屏障原语. 这样客户端接口可以
+     * 采用 c++11 提供的 memory order 语义. 这个思路或许以后可以试试.
+     */
     virtual bool Execute(const int iGroupIdx, const uint64_t llInstanceID,
             const std::string & sPaxosValue, SMCtx * poSMCtx) = 0;
 
