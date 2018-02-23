@@ -3,7 +3,7 @@
 
 参见原文.
 
--   Q: PhxPaxos 不是使用了 leveldb 作为存储么, 怎么还会有随机写的问题?
+话说回来了, PhxPaxos 不是使用了 leveldb 作为存储么, 怎么还会有随机写的问题?
 
 ## fdatasync带来的写放大问题
 
@@ -75,7 +75,7 @@ func Execute(p P, ctx *SMCtx) bool {
 
 然后 A(与 B) 在 `#1` 通过开始执行 `#2` 时, master 租约到期, 然后由于某些原因, A 未能成功续约, 导致 C 节点在 grp1 上发起自己为 master 的提议并得到 A, B, C 批准选择, C 成为了 master; A(与 B) 成功执行了 `#2`, A 给客户端返回写入成功的响应; 然后客户端开始向 master 节点发起读请求读取其刚写入的数据, 这时候读请求会被 C 处理, 此时 C 可能还未执行 Execute(P.value), 导致 C 将返回老数据. 更极端的情况, 当 master 变更发生在 `#1` 阶段时, 可能会出现 A 节点在执行 `#1` 返回 `false`, 但是 B 节点在执行 `#1` 时返回 `true`.
 
-当 master 选举所使用 Group 与处理客户端请求的 Group 是同一个时, 目测原文提出的解决方案是可以生效的.
+当 master 选举所使用 Group 与处理客户端请求的 Group 是同一个时, 目测原文提出的解决方案是可以生效的. 从 phxkv 例子来看, 获取 master 选举所用的 group 与处理业务的 group 确实是同一个.
 
 -   Q: Execute() 的行为依赖于 getCurrentMasterVersion() 的返回值, 而 getCurrentMasterVersion() 的返回值随着时间的推移可能返回变化. 那么可能存在场景: 节点 A, B, C 都开始执行 Execute(P), 然后 A 在 `#1` 返回 `false` 之后开始执行 `#2` 之前 crash 掉了, B, C 正常执行结束; C 是 master, C 给客户端返回写入成功的响应; 一段时间之后, A 重启并进行 Recovery, 然后 A 又一次会执行 Execute(P), 但此时 `getCurrentMasterVersion() > p.master_version`, 导致 A 执行 Execute() 未写入有效数据. 这可咋整?
 

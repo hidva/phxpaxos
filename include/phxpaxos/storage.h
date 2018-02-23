@@ -78,7 +78,13 @@ public:
 
     virtual int GetMinChosenInstanceID(const int iGroupIdx, uint64_t & llMinInstanceID) = 0;
 
-    // Q: SystemVariables, MasterVariables 不懂是个什么东西
+    // QA: SystemVariables, MasterVariables 不懂是个什么东西
+    // A: SystemVariables 存放着 SystemVSM 的 checkpoint. SystemVSM, phxpaxos 使用 SystemVSM 用来在节
+    // 点之间同步 system info, 如: membership 等信息; SystemVSM 每次 Execute() 时都会更新
+    // SystemVariables.
+    //
+    // MasterVariables 是 MasterStateMachine(下简称 MasterSM) 的 checkpoint. MasterSM 用来选主的 sm.
+    // MasterSM 会在每次 Execute() 时更新 MasterVariables.
     virtual int SetSystemVariables(const WriteOptions & oWriteOptions, const int iGroupIdx, const std::string & sBuffer) = 0;
 
     virtual int GetSystemVariables(const int iGroupIdx, std::string & sBuffer) = 0;

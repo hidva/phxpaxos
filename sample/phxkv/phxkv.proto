@@ -2,32 +2,41 @@ syntax = "proto3";
 
 package phxkv;
 
+/* PhxKVServer, kv server.
+ *
+ * 由于在 GetGlobal() server 侧实现中, 当当前 server 不是 Master 时, 其会返回
+ * PhxKVStatus::MASTER_REDIRECT, 所以可能会出现 client 在所有 server 间来回跳转的情况. 参见
+ * PhxKVClient::GetGlobal() 对这种情况的处理.
+ */
 service PhxKVServer {
-	rpc Put(KVOperator) returns (KVResponse) { }
-	rpc GetLocal(KVOperator) returns (KVResponse) { }
-	rpc GetGlobal(KVOperator) returns (KVResponse) { }
-	rpc Delete(KVOperator) returns (KVResponse) { }
+    rpc Put(KVOperator) returns (KVResponse) { }
+    // GetLocal() 获取 client 当前所链接的服务端本地的数据, 可能不是最新的数据.
+    rpc GetLocal(KVOperator) returns (KVResponse) { }
+    // GetGlobal() 获取指定 key 最新的数据. 注意当 client 当前所链接的服务端不是 master 时, 可能会返回
+    // redirect 返回码.
+    rpc GetGlobal(KVOperator) returns (KVResponse) { }
+    rpc Delete(KVOperator) returns (KVResponse) { }
 }
 
 message KVOperator
 {
-	string key = 1;
-	bytes value = 2;
-	uint64 version = 3;
-	uint32 operator = 4;
-	uint32 sid = 5;
+    string key = 1;
+    bytes value = 2;
+    uint64 version = 3;
+    uint32 operator = 4;
+    uint32 sid = 5;
 };
 
 message KVData
 {
-	bytes value = 1;
-	uint64 version = 2;
-	bool isdeleted = 3;
+    bytes value = 1;
+    uint64 version = 2;
+    bool isdeleted = 3;
 };
 
 message KVResponse
 {
-	KVData data = 1;
-	int32 ret = 2;
-	uint64 master_nodeid = 3;
+    KVData data = 1;
+    int32 ret = 2;
+    uint64 master_nodeid = 3;
 };

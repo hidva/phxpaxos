@@ -129,6 +129,8 @@ public:
 
     //optional
     //One paxos group can mounting multi state machines.
+    // 注意 PhxPaxos 内部也可能会追加一些状态机, 比如负责 master 选举的 MasterStateMachine, 负责实现 member
+    // ship 的 SystemVSM 等.
     std::vector<StateMachine *> vecSMList;
 
     //optional
@@ -138,7 +140,8 @@ public:
     /* 按我理解, 当 bIsUseMaster 为 true 时表明当前 group 将仅用来 Master 节点的选择. phxpaxos 会将内置实现
      * 的选主状态机追加 vecSMList 中; 选主状态机与 Node::GetMaster() 等接口应该是通过共享内存来通信.
      *
-     * Q: bIsUseMaster 为 true 的 group.vecSMList 还能添加其他 sm 么? group 还能用来 proposer 值么?
+     * QA: bIsUseMaster 为 true 的 group.vecSMList 还能添加其他 sm 么? group 还能用来 proposer 值么?
+     * A: 可以添加业务逻辑 sm, 事实上正确用户就是一个 group 同时负责 master 选举以及业务逻辑处理.
      *
      * QA: bIsUseMaster 为 true 时, 假设代码部署在三个节点 A, B, C 上, 那么何时会由谁触发第一次选主呢?
      * A: 在 Node.RunNode 时会对每一个 group 有一个逻辑初始化的操作, 对于 bIsUseMaster 为 true 的 group 其

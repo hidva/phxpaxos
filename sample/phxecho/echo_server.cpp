@@ -83,10 +83,12 @@ int PhxEchoServer :: RunPaxos()
     GroupSMInfo oSMInfo;
     oSMInfo.iGroupIdx = 0;
     //one paxos group can have multi state machine.
-    oSMInfo.vecSMList.push_back(&sm1_);
+    // oSMInfo.vecSMList.push_back(&sm1_);
     oSMInfo.vecSMList.push_back(&sm2_);
+    oSMInfo.bIsUseMaster = true;
     oOptions.vecGroupSMInfoList.push_back(oSMInfo);
 
+    /*
     //use logger_google to print log
     LogFunc pLogFunc;
     ret = LoggerGoogle :: GetLogger("phxecho", "./log", 3, pLogFunc);
@@ -98,6 +100,8 @@ int PhxEchoServer :: RunPaxos()
 
     //set logger
     oOptions.pLogFunc = pLogFunc;
+    */
+    oOptions.eLogLevel = LogLevel::LogLevel_Verbose;
 
     ret = Node::RunNode(oOptions, m_poPaxosNode);
     if (ret != 0)
