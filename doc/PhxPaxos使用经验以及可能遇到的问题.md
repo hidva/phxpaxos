@@ -77,7 +77,11 @@ func Execute(p P, ctx *SMCtx) bool {
 
 当 master 选举所使用 Group 与处理客户端请求的 Group 是同一个时, 目测原文提出的解决方案是可以生效的. 从 phxkv 例子来看, 获取 master 选举所用的 group 与处理业务的 group 确实是同一个.
 
--   Q: Execute() 的行为依赖于 getCurrentMasterVersion() 的返回值, 而 getCurrentMasterVersion() 的返回值随着时间的推移可能返回变化. 那么可能存在场景: 节点 A, B, C 都开始执行 Execute(P), 然后 A 在 `#1` 返回 `false` 之后开始执行 `#2` 之前 crash 掉了, B, C 正常执行结束; C 是 master, C 给客户端返回写入成功的响应; 一段时间之后, A 重启并进行 Recovery, 然后 A 又一次会执行 Execute(P), 但此时 `getCurrentMasterVersion() > p.master_version`, 导致 A 执行 Execute() 未写入有效数据. 这可咋整?
+-   QA: Execute() 的行为依赖于 getCurrentMasterVersion() 的返回值, 而 getCurrentMasterVersion() 的返回值随着时间的推移可能返回变化. 那么可能存在场景: 节点 A, B, C 都开始执行 Execute(P), 然后 A 在 `#1` 返回 `false` 之后开始执行 `#2` 之前 crash 掉了, B, C 正常执行结束; C 是 master, C 给客户端返回写入成功的响应; 一段时间之后, A 重启并进行 Recovery, 然后 A 又一次会执行 Execute(P), 但此时 `getCurrentMasterVersion() > p.master_version`, 导致 A 执行 Execute() 未写入有效数据. 这可咋整?
+
+-   A: 参见 https://github.com/Tencent/phxpaxos/issues/112
+
+按我理解, 可以把上述的 master version 换成 master node info; 即可 propose 时带上 master node info, 在 StateMachine::Execute() 时比较携带的 master node info 与当前 master node info 是否相同. 可以结合 'master 任一时刻下只存在一个' 来推敲这个确实是可以的. 比较 master version 意味着在 propose 与 StateMachine::Execute() 之间不能发生 master 选举; 而比较 master node info 则意味着在 propose 与 StateMachine::Execute() 之间可以进行 master 选举变更, 只要 propose 时与 StateMachine::Execute 时具有相同的 master node 即可.
 
 ## 关于PhxPaxos会产生巨量的日志
 

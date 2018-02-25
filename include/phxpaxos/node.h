@@ -162,6 +162,8 @@ public:
     virtual int ChangeMember(const int iGroupIdx, const NodeInfo & oFromNode, const NodeInfo & oToNode) = 0;
 
     //Master
+    /* Q: PhxPaxos 中如何才能更严格的使用 Master 功能? https://github.com/Tencent/phxpaxos/issues/112
+     */
 
     //Check who is master.
     virtual const NodeInfo GetMaster(const int iGroupIdx) = 0;

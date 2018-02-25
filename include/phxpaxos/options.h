@@ -263,6 +263,9 @@ public:
     //optional
     //One phxpaxos can mounting multi state machines.
     //This vector include different phxpaxos's state machines list.
+    /* QA: 同一个 StateMachine 对象能否挂载到多个 group 上.
+     * A: 根据 sample/phxkv 来看, 是可以的. 不过自己要注意确保此时 StateMachine 在所有节点上具有一致的行为.
+     */
     GroupSMInfoList vecGroupSMInfoList;
 
     //optional
