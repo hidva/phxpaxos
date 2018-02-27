@@ -83,6 +83,10 @@ func Execute(p P, ctx *SMCtx) bool {
 
 按我理解, 可以把上述的 master version 换成 master node info; 即可 propose 时带上 master node info, 在 StateMachine::Execute() 时比较携带的 master node info 与当前 master node info 是否相同. 可以结合 'master 任一时刻下只存在一个' 来推敲这个确实是可以的. 比较 master version 意味着在 propose 与 StateMachine::Execute() 之间不能发生 master 选举; 而比较 master node info 则意味着在 propose 与 StateMachine::Execute() 之间可以进行 master 选举变更, 只要 propose 时与 StateMachine::Execute 时具有相同的 master node 即可.
 
+这里介绍的是正确使用 master 功能的一种思想, 目前 PhxPaxos 暂无法实现该思想. 不过如果按照 https://blog.hidva.com/2018/02/27/PhxPaxos-Group-MultiSM/ 中的想法实现多状态机是可以实现该思想的.
+
+-   Q: 要实现严格的master还有另外一种方法，就是通过sm的BeforePropose功能，来检测当前最新的master，如果master不是自己，则可以修改value来达到拒绝的效果。这种方法不需要在execute函数检测master。没看懂.
+
 ## 关于PhxPaxos会产生巨量的日志
 
 参见原文. 有一个 phxpaxos 会产生巨量日志的意识.

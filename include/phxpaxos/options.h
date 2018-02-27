@@ -129,8 +129,11 @@ public:
 
     //optional
     //One paxos group can mounting multi state machines.
-    // 注意 PhxPaxos 内部也可能会追加一些状态机, 比如负责 master 选举的 MasterStateMachine, 负责实现 member
-    // ship 的 SystemVSM 等.
+    /* 注意 PhxPaxos 内部也可能会追加一些状态机, 比如负责 master 选举的 MasterStateMachine, 负责实现 member
+     * ship 的 SystemVSM 等.
+     *
+     * 目前 PhxPaxos 多状态机实现貌似有一丁点问题, 参见: https://blog.hidva.com/2018/02/27/PhxPaxos-Group-MultiSM/
+     */
     std::vector<StateMachine *> vecSMList;
 
     //optional
